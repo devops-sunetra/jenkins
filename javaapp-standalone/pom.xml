@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>ArtisanTek Java Sample</name>
-    <description>A lightweight and beautiful Java 21 web application for ArtisanTek May2025 batch</description>
+    <description>A lightWeight and beautiful Java 21 web application for ArtisanTek May2025 batch</description>
 
     <properties>
         <java.version>21</java.version>
