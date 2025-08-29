@@ -1,5 +1,5 @@
-FROM FROM maven:3.9.9-eclipse-temurin-21
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY . /app
+COPY ./target/java-sample-21-1.0.0.jar app.jar
 EXPOSE 5000
-CMD ["java", "-jar", "target/java-sample-21-1.0.0.jar"]
+CMD ["java", "-jar", "app.jar"]
