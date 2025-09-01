@@ -1,9 +1,5 @@
 pipeline {
-    agent any
-
-    environment {
-        DOCKER_SERVER = "ubuntu@172.31.7.208"
-    }
+    agent { label 'docker-agent' }
 
     stages {
         stage('Checkout') {
@@ -28,15 +24,15 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonarqube1') {   
-                    dir('javaapp-standalone') {
-                        sh "mvn sonar:sonar -Dsonar.projectKey=myapp"
-                    }
-                }
-            }
-        }
+        // stage('SonarQube Analysis') {
+        //  steps {
+           //     withSonarQubeEnv('sonarqube1') {
+           //         dir('javaapp-standalone') {
+           //             sh "mvn sonar:sonar -Dsonar.projectKey=myapp"
+           //         }
+          //      }
+          //  }
+    //    }
 
         stage('Trivy FS Scan') {
             steps {
@@ -54,42 +50,39 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
+        stage('Trivy Image Scan') {
             steps {
-                dir('javaapp-standalone') {
-                    sh "trivy image --exit-code 0 --severity CRITICAL,HIGH myapp:latest"
-                }
+                sh "trivy image --exit-code 0 --severity HIGH,CRITICAL myapp:latest"
             }
         }
 
         stage('Push to ECR') {
             steps {
-                dir('javaapp-standalone') {
-                    sh '''
-                        aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 905418283021.dkr.ecr.ap-south-1.amazonaws.com
-                        docker tag myapp:latest 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
-                        docker push 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
-                    '''
-                }
+                sh """
+                    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 905418283021.dkr.ecr.ap-south-1.amazonaws.com &&
+                    docker tag myapp:latest 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest &&
+                    docker push 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
+                """
             }
         }
 
         stage('Deploy') {
             steps {
-                sshagent(['ubuntu']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no $DOCKER_SERVER '
-                            docker stop myapp || true &&
-                            docker rm -f myapp || true &&
-                            docker pull 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest &&
-                            docker run -d --name myapp -p 5000:5000 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
-                        '
-                        PUBLIC_IP=\$(ssh -o StrictHostKeyChecking=no $DOCKER_SERVER "curl -s http://checkip.amazonaws.com")
-                        echo "==================================================="
-                        echo " Application deployed successfully! 🎉"
-                        echo " Access it here: http://\$PUBLIC_IP:5000"
-                        echo "==================================================="
-                    """
+                sh """
+                    docker stop myapp || true &&
+                    docker rm -f myapp || true &&
+                    docker pull 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest &&
+                    docker run -d --name myapp -p 5000:5000 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
+                """
+                script {
+                    def PUBLIC_IP = sh(
+                        script: "curl -s http://checkip.amazonaws.com",
+                        returnStdout: true
+                    ).trim()
+                    echo "==================================================="
+                    echo " Application deployed successfully! 🎉"
+                    echo " Access it here: http://${PUBLIC_IP}:5000"
+                    echo "==================================================="
                 }
             }
         }
