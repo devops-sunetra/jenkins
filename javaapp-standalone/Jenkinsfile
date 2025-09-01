@@ -54,7 +54,7 @@ pipeline {
             steps
 			{			
                 sh """
-                    TRIVY_CACHE_DIR=/var/lib/trivy \
+					export TRIVY_CACHE_DIR=/tmp/trivy
                     trivy image --scanners vuln --exit-code 0 --severity HIGH,CRITICAL myapp:latest
                 """
             }
