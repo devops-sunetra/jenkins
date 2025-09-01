@@ -51,8 +51,11 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-            steps {
-                sh "trivy image --scanners vuln --exit-code 0 --severity HIGH,CRITICAL myapp:latest"
+            steps 
+                sh """
+                    TRIVY_CACHE_DIR=/var/lib/trivy \
+                    trivy image --scanners vuln --exit-code 0 --severity HIGH,CRITICAL myapp:latest
+                """
             }
         }
 
