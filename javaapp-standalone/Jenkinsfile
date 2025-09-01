@@ -30,8 +30,10 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
+				
                 withSonarQubeEnv('sonarqube') {  // must match configured name
                     sh '''
+						cd javaapp-standalone
                         mvn sonar:sonar \
                           -Dsonar.projectKey=myapp \
                           -Dsonar.projectName="MyApp" \
