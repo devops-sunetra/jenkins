@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker-agent' }
 
 	environment {
-        SONARQUBE = credentials('sonarqube1')  // Jenkins credential for token
+        SONARQUBE = credentials('sonarqube')  // Jenkins credential for token
     }
 	
     stages {
