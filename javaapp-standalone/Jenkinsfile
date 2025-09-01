@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'docker-agent' }
 
+	environment {
+        SONARQUBE = credentials('sonarqube1')  // Jenkins credential for token
+    }
+	
     stages {
         stage('Checkout') {
             steps {
@@ -24,15 +28,19 @@ pipeline {
             }
         }
 
-        // stage('SonarQube Analysis') {
-        //  steps {
-           //     withSonarQubeEnv('sonarqube1') {
-           //         dir('javaapp-standalone') {
-           //             sh "mvn sonar:sonar -Dsonar.projectKey=myapp"
-           //         }
-          //      }
-          //  }
-    //    }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {  // must match configured name
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.projectKey=myapp \
+                          -Dsonar.projectName="MyApp" \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
+                }
+            }
+        }
 
         stage('Trivy FS Scan') {
             steps {
