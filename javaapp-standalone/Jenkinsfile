@@ -73,9 +73,9 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 sh """
-                    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 905418283021.dkr.ecr.ap-south-1.amazonaws.com &&
-                    docker tag myapp:latest 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest &&
-                    docker push 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
+                    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 655445510312.dkr.ecr.ap-south-1.amazonaws.com &&
+                    docker tag myapp:latest 655445510312.dkr.ecr.ap-south-1.amazonaws.com/javaapp:latest &&
+                    docker push 655445510312.dkr.ecr.ap-south-1.amazonaws.com/javaapp:latest
                 """
             }
         }
@@ -85,8 +85,8 @@ pipeline {
                 sh """
                     docker stop myapp || true &&
                     docker rm -f myapp || true &&
-                    docker pull 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest &&
-                    docker run -d --name myapp -p 5000:5000 905418283021.dkr.ecr.ap-south-1.amazonaws.com/javaapp-image:latest
+                    docker pull 655445510312.dkr.ecr.ap-south-1.amazonaws.com/javaapp:latest &&
+                    docker run -d --name myapp -p 5000:5000 655445510312.dkr.ecr.ap-south-1.amazonaws.com/javaapp:latest
                 """
                 script {
                     def PUBLIC_IP = sh(
